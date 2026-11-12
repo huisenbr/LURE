@@ -73,6 +73,7 @@ Open [`viewer.html`](viewer.html) in a browser for a tabbed view, or use the SVG
 | `BUILD-GUIDE.md` | Step by step build and test guide (sealed build) |
 | `design-doc.md` | Full design: options, what we tried, open questions, tests, safety |
 | `research/presentation-prep.md` | Resources, papers and talking points |
+| `research/research-review.md` | Review of the research: checked sources, expert input, and the gaps still open |
 | `diagrams/` | SVG diagrams |
 | `viewer.html` | Tabbed viewer for the diagrams |
 | `tools/build_viewer.py` | Rebuilds `viewer.html` (`python3 tools/build_viewer.py`) |

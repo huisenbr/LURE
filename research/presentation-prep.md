@@ -139,7 +139,7 @@ Sources marked (checked) were confirmed on Nov 12. See `research-review.md` for 
 
 ## Part 3: Gaps To Fill Before the Presentation
 
-- Get real citations and links for the Jackson State paper, Crook et al., WHOI, and the patents.
+- Citations for the Jackson State paper, Crook et al., WHOI and the patents were checked on Nov 12. Open gaps (including what transducer the boat uses) are in `research-review.md`.
 - Confirm with Dr. Gerig the exact model names behind the $6,000 (release) and $2,000 (non-release) prices.
 - Already answered by Dr. Gerig: Lake Michigan, about 40 ft max, recovered yearly, about 5% lost. We still need to ask: which receiver model, how it is anchored besides the 80 lb weight, and whether one person could hand-haul that weight from 40 ft.
 - Compare our float to theirs. Our planning number was a 1 to 2 L float (about 2 to 4 lb of pull). Dr. Gerig's team uses 10 lb buoyancy buoys with an 80 lb weight. Check whether our float is big enough to bring the haul rope up and be seen, and whether a bigger float makes sense.
