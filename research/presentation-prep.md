@@ -8,7 +8,7 @@ Source: rebuilt from the "Research resources and presentation talking points" ch
 
 ## Part 1: Resources and Papers We Researched
 
-Items marked **(verify)** came from our research chats without a saved link or full citation. Look them up and get the exact citation before they go on a slide or in the notebook.
+Sources marked (checked) were confirmed on Nov 12. See `research-review.md` for the full review and the gaps still open.
 
 ### Commercial products (what exists today)
 
@@ -28,10 +28,10 @@ Items marked **(verify)** came from our research chats without a saved link or f
 
 | Resource | What it is | Why it matters to us |
 |---|---|---|
-| "Underwater Magnetic Release System," Jackson State University **(verify)** | Bluetooth-controlled electropermanent magnet release, about $85.44 in parts | Closest related design to our hold magnet. Shows a cheap magnet release is realistic. |
-| Crook et al., mooring retrieval pod **(verify)** | Academic work on retrieving moorings | Benchmark for our float and haul approach. |
-| WHOI pop-up float recovery system **(verify)** | Woods Hole system that sends a float to the surface to recover gear | Same marker float concept at a research-lab level. |
-| Several magnetic release patents **(verify)** | Patents on magnet-based release latches | Shows the idea is established, and helps us explain what is different about ours. |
+| Addy et al. (2022), "Underwater Magnetic Release System," *Smart Trends in Computing and Communications*, LNNS 286, https://doi.org/10.1007/978-981-16-4016-2_11 (checked) | Jackson State University phone-programmed electropermanent magnet release, about $85.44 in parts | Closest related design to our hold magnet. Shows a cheap magnet release is realistic. |
+| Crook, Adair and Hetherington (2017), "Low-cost device for retrieval of moorings deployed with underwater remote release systems," *Marine and Freshwater Research* 69(3), https://doi.org/10.1071/MF17189 (checked) | Low-cost retrieval pod, 12 retrievals over two 6-month deployments with no failures, tested shallower than 8 m | Benchmark for our float and haul approach. |
+| Dunn and Gordon (1989), "A pop-up float recovery system for coastal oceanographic tripods," WHOI, https://doi.org/10.1575/1912/6450 (checked) | Pop-up float with burn wire cam latches, Dacron haul line, and a backup timer | Same marker float concept at a research-lab level. |
+| US 12,246,800 (Jackson State), US 5,219,245, US 5,100,353 (all checked) | Magnet-based float release patents | Shows the idea is established, and helps us explain what is different about ours. See `research-review.md`. |
 | APW Company | US source for permanent (latching) electromagnets, about $28.60 to $46.20 depending on size and holding force | Possible magnet supplier. Our actual magnet cost so far is about $23. |
 
 ### People and organizations we reached out to or identified
