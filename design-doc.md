@@ -50,17 +50,18 @@ Battery, DS3231 real-time clock, Arduino, logic-level MOSFET, and a hold magnet 
 1. Arm with a push button (reed switch and magnet in the sealed version) and set the alarm date.
 2. Sleep for months while the clock keeps time. The magnet needs no power while it holds, so the battery only runs the clock.
 3. On the set date the clock wakes the board, which listens for the coded tone from the boat. When it hears the tone, the MOSFET powers the hold magnet, which lets go of the float.
-4. The float rises and takes the haul rope to the surface. The board then switches itself off so it cannot drain the battery.
+4. The float rises and takes the haul rope to the surface. The board stays awake and keeps listening, so a later tone fires the magnet again as a retry (decided Nov 12 and Nov 19). It does not go back to sleep.
 
 Prototype on an Arduino Nano. The sealed version moves to a 3.3V Pro Mini with lithium AA cells.
+Power (decided Nov 19, bench build): one pack of two 4 AA holders in series, about 12 V, through a 3 to 5 A fuse. It feeds the magnet and the Nano's VIN pin, with all grounds on one bus. A Nano in sleep still draws about 15 to 20 mA (regulator, LED, USB chip), so this is for the bench and days of running, not months. For the sealed build the Pro Mini's RAW pin is rated 3.4 to 12 V (SparkFun), but its regulator and LED still waste current: remove the LED and measure sleep current before trusting it, or add a micropower regulator. A fresh 8-cell lithium pack can sit above 12 V, so check that too. The wiring is in diagrams/electronics-wiring.svg.
 Why the change: the burn wire would not part the line reliably in water. A magnet has no heating step, so cold water should not matter the same way.
 Nov 8 add-on: a piezo tone listener can also trigger the MOSFET. See the next sections.
 
 ## PVC HOUSING PLAN (for now, decided Nov 8)
-- Start with 3 inch Schedule 40 PVC, a cemented cap on one end, and a threaded clean-out with an O-ring (not a gripper plug) on the other. Fall back to 4 inch if the parts do not fit. 2 inch is probably too small for the 4 AA holder and the 32 mm magnet.
+- Start with 3 inch Schedule 40 PVC, a cemented cap on one end, and a threaded clean-out with an O-ring (not a gripper plug) on the other. Fall back to 4 inch if the parts do not fit. 2 inch is probably too small for the two 4 AA holders and the 32 mm magnet.
 - Where things go: the magnet and piezo sit against the inside of the cemented end cap, so the signal and the pull only cross one wall. The electronics and batteries sit behind them, and the O-ring end opens for arming and battery changes.
 - Steps before we trust it:
-  1. Fit check with the real parts (APW 32 mm, Pro Mini or Nano, DS3231, 4 AA holder).
+  1. Fit check with the real parts (APW 32 mm, Pro Mini or Nano, DS3231, and two 4 AA holders, since the magnet is 12 V).
   2. Measure magnet hold force through a scrap of the real cap, dry. Thin the cap with a flat recess from the outside if the force drops too much.
   3. Piezo test: glue the disc flat to the inside of a scrap cap and repeat the tub test. Compare to the bare disc.
   4. Dry run: sealed empty pipe with paper towels, 40 ft, at least a week. Check for water and deformation.
@@ -104,6 +105,8 @@ Design notes and constraints:
 - Idle goal: under about 100 microamps average, otherwise the battery will not last months.
 
 ## PIEZO OPEN DESIGN QUESTIONS (not decided yet)
+- DECIDED (Nov 19): after the wake date it listens until the battery dies. After a firing it keeps listening (no deep sleep) so a second tone can retry. The plan is a 3000 Hz tone. Main.ino still has TARGET_HZ at 1000 and samples at 8 kHz, so 3000 Hz needs a check on the bench before we rely on it.
+- PROPOSED, not built, battery numbers are estimates: instead of sampling non-stop, wake on the watchdog about every 2 s, turn on the D7 bias, sample about 100 ms, and sleep again, with 3 wakes in a row needed to fire. A 10 s tone from the boat would then be enough (about 6 s worst case). Rough average draw is about 0.2 mA on a Pro Mini, which would last well over a year on two lithium AAs, against about a month of non-stop listening. Measure on the real board.
 - DECIDED (Nov 12): the timer only saves power. Everything sleeps until the set date, then wakes and listens for the tone. The tone from the boat is the only thing that fires the release. The timer never releases the float on its own. Still open: how long it listens each time it wakes, and whether it listens in set windows (for example 10 minutes a day) or all the time after the wake date. Fail-stuck risk matters here, because a unit that never hears the tone never releases.
 - Listening window length and schedule, and what it costs in battery.
 - Which tone and how to code it (single tone, or a short sequence) so boat noise cannot trigger it.
@@ -165,8 +168,8 @@ We first planned a Nalgene bottle (magnet and electronics inside, no holes throu
 - Arduino Nano with headers, plus USB cable
 - DS3231 RTC module (use the coin cell type its listing recommends)
 - IRLZ44N MOSFET, a few spares (not an IRF520 module)
-- Hold magnet that holds with no power and releases when powered: APW 32 mm, ordered Nov 8 (listing: about 40 lb, 1.2 A). Check its rated voltage on the listing, then measure its real release current and holding force when it arrives.
-- 4 AA holder with batteries, plus a 3 to 5 A fuse
+- Hold magnet that holds with no power and releases when powered: APW 32 mm, ordered Nov 8 (listing: about 40 lb, 1.2 A). It is rated 12 V, 1.2 A (checked Nov 19). Measure its real release current, polarity and holding force when it arrives.
+- Two 4 AA holders with batteries, wired in series (about 12 V for the magnet), plus a 3 to 5 A fuse
 - Breadboard, jumpers, 220 ohm and 10k resistors, push button
 - Multimeter (also needed to measure the magnet's release current)
 - Kitchen scale or luggage scale to measure holding force
@@ -186,8 +189,8 @@ The float does not lift the cinder block anchor. It only marks the spot and carr
 - Alternative we set aside: the release cuts the receiver free of the blocks so only the receiver floats up (how commercial release units work). Leaves concrete on the lake bottom. Could come back to this if hauling blocks proves too hard.
 
 ## HOLD MAGNET: OPEN DESIGN QUESTIONS (not decided yet)
-- Voltage: check the rated voltage on the APW 32 mm listing. A 4 AA pack is about 6V. If the magnet is rated for 12V or 24V it may not release on 6V, and we would need more cells or a boost converter.
-- Release power: how much current and how long does the magnet need to let go? The listing says about 1.2 A. Measure it, and test the shortest pulse that works. It should be a short pulse, so battery life should be fine, but we need to confirm the battery can supply that current after months in cold water (cold lowers battery output).
+- Voltage: ANSWERED (Nov 19). The magnet is the APW EML32mm-12: 12 V DC, 1.2 A, 10 ohm, 14.4 W, duty listed as "Intermittent", about 40 lb holding, 32 mm by 29 mm, 26 AWG leads 200 mm long. The team wired two 4 AA packs in series (about 12 V) and that works. APW describes its permanent electromagnets as holding with no power and "neutralized" when powered. The listing does not give coil polarity, a pulse length or a temperature rating, so test both polarities and the shortest pulse that lets go. The magnet grips again as soon as power stops, so the pulse has to last until the float has pulled clear (the sketch uses 3 s).
+- Release power: how much current and how long does the magnet need to let go? The listing says 1.2 A at 12 V. APW's page says these suit holding most of the time and releasing infrequently for very short periods, so keep the pulse short and spaced (the sketch waits 5 s after each firing). Check the coil temperature after a few pulses. Measure it, and test the shortest pulse that works. It should be a short pulse, so battery life should be fine, but we need to confirm the battery can supply that current after months in cold water (cold lowers battery output).
 - Holding force: it must hold against the float's pull for months. A rough planning number is a float of 1 to 2 L, which pulls up about 2 to 4 lb (estimate, to be confirmed). The 32 mm is listed at about 40 lb, roughly 10 times that, but rated force drops a lot with any gap, so measure it with a real gap.
 - Holding force through the housing wall: the magnet sits inside, so its pull has to cross the PVC end cap. A thick cap could cut the force a lot. Measure it through the actual cap, and thin the cap with an outside recess if needed.
 - Fail-stuck behavior: because it only releases when powered, a dead battery or failed board means the float never releases. The scientist's drag line grapple is still the fallback. We should also decide how to check that the battery and board are healthy before deploying (for example a test pulse on land).
@@ -259,13 +262,14 @@ Adults handle all powered tests. Strong magnets can pinch fingers badly and can 
 - Nov 5: swapped in a piezo disc with a bias circuit. Strong signal in contact with a speaker, weak through air.
 - Nov 8: piezo tone trigger is now the plan. Added the build log of what we tried and why.
 - Nov 8: APW 32 mm hold magnet ordered. Waiting on delivery.
+- Nov 19: confirmed the magnet is 12 V (EML32mm-12, 1.2 A). Power is two 4 AA packs in series. Redrew the electronics wiring as one diagram (the old one had the battery unconnected). Decided it listens until the pack dies and keeps listening after firing.
 - Nov 8: Nalgene bottle ruled out for the housing (crush risk at 40 ft) and Pelican-style cases ruled out (1 meter rating). For now we plan on PVC pipe. OtterBox-style box is the backup. Not final until the dry run and through-the-wall tests pass.
-- Next: order the PVC parts and run the fit check; when the APW 32 mm arrives, check its rated voltage, then measure its release current and holding force, including through a scrap PVC cap; order desk-test parts (including a pack of piezo discs); run the piezo tub and housing tests and the resonance sweep; run the 40 ft dry run; decide how the timer and tone work together; decide how the boat sends the tone; build a first canister and run the tangle test; and ask the scientist the questions above.
+- Next: order the PVC parts and run the fit check; when the APW 32 mm arrives, measure its release current, coil polarity, shortest working pulse and holding force, including through a scrap PVC cap (it is rated 12 V); order desk-test parts (including a pack of piezo discs); run the piezo tub and housing tests and the resonance sweep; run the 40 ft dry run; check the 3000 Hz tone on the bench and decide whether to duty-cycle the listening; decide how the boat sends the tone; build a first canister and run the tangle test; and ask the scientist the questions above.
 
 ## REFERENCES
 - Team deck: https://claude.ai/artifact/5BLunfFFvzfiGnLpPrjwGU (still shows the burn wire design)
 - Build and test plan doc: https://claude.ai/code/artifact/6865f8ff-a91d-4fc7-b273-fc9f8bd1fcc0 (still shows the burn wire design)
-- Arduino sketch and wiring diagram: "Acoustic sensor retrieval system design" chat (written for the burn wire MOSFET, will need a small change for the magnet): https://claude.ai/chat/c2cbab41-ff39-41f6-aeb4-6bc5f1907db6
+- Arduino sketch and wiring diagram: now in this repo (Main.ino and diagrams/electronics-wiring.svg). The older burn wire version is in the "Acoustic sensor retrieval system design" chat: https://claude.ai/chat/c2cbab41-ff39-41f6-aeb4-6bc5f1907db6
 - Tone detector, sleep and piezo sketches: "Burn wire firing code" chat: https://claude.ai/chat/6b084208-258b-421d-93e5-fdfaf9f9a85d
 - Sound release and transducer options (HC-SR04, piezo discs, costs): "Ultrasonic sensor range options" chat: https://claude.ai/chat/2808c2ab-504b-4b66-b4ad-377f40ac7ef6
 - Burn wire design and prior art: "Burn wire release mechanisms" chat: https://claude.ai/chat/66f66330-cf1c-4f02-be8b-f085c53e0e66

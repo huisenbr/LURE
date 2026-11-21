@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 475" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="12">
 <title>PVC housing cross-section</title>
-<desc>Side cut through a 3 inch Schedule 40 PVC housing. Left end is a cemented cap with the hold magnet and piezo disc mounted against its inside face, a steel plate on the float outside. Electronics and the 4 AA holder sit behind. Right end is a threaded clean-out with an O-ring for arming and battery changes.</desc>
+<desc>Side cut through a 3 inch Schedule 40 PVC housing. Left end is a cemented cap with the hold magnet and piezo disc mounted against its inside face, a steel plate on the float outside. Electronics and the 2 x 4 AA holders sit behind. Right end is a threaded clean-out with an O-ring for arming and battery changes.</desc>
 <rect width="780" height="475" fill="#ffffff"/>
 <text x="20" y="26" font-size="15" font-weight="600" fill="#222">LURE PVC housing cross-section (plan for now, not final)</text>
 <text x="20" y="44" font-size="11" fill="#555">3 inch Schedule 40 first, 4 inch if the parts do not fit. Not trusted until the dry run and through-the-wall tests pass.</text>
@@ -30,7 +30,7 @@
 <text x="258" y="226" font-size="11" fill="#04342c">MOSFET + diode</text>
 <text x="258" y="242" font-size="11" fill="#04342c">piezo bias</text>
 <rect x="380" y="162" width="180" height="98" rx="4" fill="#faeeda" stroke="#ba7517"/>
-<text x="404" y="206" font-size="12" fill="#412402">4 AA holder</text>
+<text x="404" y="206" font-size="12" fill="#412402">2 x 4 AA holders</text>
 <text x="404" y="224" font-size="11" fill="#412402">(lithium cells)</text>
 <!-- clean-out adapter -->
 <rect x="630" y="124" width="60" height="182" rx="4" fill="#afa9ec" stroke="#534ab7"/>

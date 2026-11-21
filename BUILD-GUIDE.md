@@ -25,7 +25,7 @@ The design doc ([design-doc.md](design-doc.md)) has the reasoning, what we tried
 | Piezo bias circuit, strong signal when the disc touches a speaker | Works on the bench |
 | Piezo hearing a tone through air | Does not work (expected, it is a contact sensor) |
 | Piezo hearing a tone through water or through the PVC end cap | UNTESTED |
-| APW 32 mm hold magnet release on the battery pack | UNTESTED (magnet voltage and release current TBD) |
+| APW EML32mm-12 hold magnet release on the 12 V pack | UNTESTED (12 V, 1.2 A per the listing; polarity, shortest pulse and real current TBD) |
 | PVC housing at 40 ft for a week | UNTESTED |
 | Pro Mini (3.3V) version of the wiring and idle current | UNTESTED |
 | Playing the tone through the lab's existing transducer, range, and tone coding | TBD |
@@ -39,13 +39,13 @@ Search terms only, prices not checked. Buy a spare of the small parts.
 | Arduino Pro Mini, 3.3V / 8 MHz, ATmega328P | The sealed build uses this. Needs an FTDI USB-to-serial adapter (3.3V) to upload. An Arduino Nano works for bench testing. |
 | DS3231 real-time clock module | Use the coin cell type its listing recommends. |
 | IRLZ44N logic-level MOSFET | Not an IRF520 module. |
-| APW 32 mm hold magnet (electro-permanent) | Holds with no power, lets go when powered. About 40 lb holding, about 1.2 A listed. **Check the rated voltage on the listing before wiring.** |
+| APW EML32mm-12 hold magnet (electro-permanent) | Holds with no power, lets go when powered. 12 V, 1.2 A, 10 ohm, about 40 lb holding. Duty is "Intermittent". Coil polarity and pulse length are not listed, so test them. |
 | Steel plate for the magnet to grab | Ours is 1 mm 304 stainless sheet for bucket tests. Match the plate to the magnet's listing. |
 | Flyback diode (1N4007 or similar) | Goes across the magnet. |
 | 35 mm piezo disc | A pack of 10 is cheap. |
 | Resistors: two 100k, one 220 ohm, one 10k | |
 | 0.1 uF (104) ceramic capacitor | |
-| 4 AA battery holder + lithium AA cells | Lithium holds up better in cold water than alkaline. |
+| Two 4 AA battery holders + lithium AA cells | Wired in series for about 12 V (the magnet is 12 V). Lithium holds up better in cold water than alkaline. |
 | 3 to 5 A fuse and holder | In line with the battery. |
 | 3 inch Schedule 40 PVC pipe, one cap to cement on, one scrap cap for tests | See the housing step. |
 | Threaded clean-out adapter with plug and O-ring | The opening end. Do not use an expanding gripper plug. |
@@ -83,7 +83,7 @@ Build the whole circuit on a breadboard and test it before anything goes in a pi
 | MOSFET drain | magnet, negative lead |
 | Magnet, positive lead | battery positive (through the fuse) |
 | Flyback diode | across the magnet, stripe (cathode) toward battery positive |
-| Battery positive (through fuse) | Arduino RAW |
+| Battery positive (through fuse) | Arduino RAW (Pro Mini, rated 3.4 to 12 V) or VIN (Nano) |
 | Battery negative | GND (all grounds joined) |
 
 **Piezo listener:**
@@ -97,7 +97,8 @@ Build the whole circuit on a breadboard and test it before anything goes in a pi
 Notes:
 
 - The magnet is fed from the battery, not from the Arduino. The Arduino only switches it through the MOSFET.
-- 4 AA lithium cells are about 6 V. Confirm the magnet's rated voltage against that. If it is rated for 12 V or 24 V it may not release on 6 V. **TBD until the magnet is measured.**
+- The magnet is rated 12 V, so the pack is two 4 AA holders in series (about 12 V). The Nano can run from the same pack on VIN for bench work (7 to 12 V recommended). A Nano in sleep draws about 15 to 20 mA, so use this for the bench and days of running only. A fresh 8-cell lithium pack can sit above 12 V, so check it with a meter.
+- The listing gives no coil polarity. If it does not release, swap the two magnet leads and try again, and note which way works.
 - The sketch does not switch the piezo bias on and off. The divider draws about 16 uA on 3.3V all the time. Powering it from a spare pin only while listening is a planned improvement and **is not in the code yet**.
 - The IRLZ44N is specified for logic-level drive, but we have not tested it at 3.3 V gate voltage with the real magnet. **UNTESTED.** Measure the current through the magnet when you first fire it.
 
@@ -160,7 +161,7 @@ Plan for idle current under about 100 microamps average, or the batteries will n
 
 This is the plan and it is **not trusted until the dry run passes.** Full details are in the design doc under PVC HOUSING PLAN.
 
-1. Use 3 inch Schedule 40 PVC (4 inch if the parts do not fit). Check the fit with the real parts first: magnet, Pro Mini, DS3231, 4 AA holder.
+1. Use 3 inch Schedule 40 PVC (4 inch if the parts do not fit). Check the fit with the real parts first: magnet, Pro Mini, DS3231, two 4 AA holders.
 2. Cement a cap on one end with primer and cement. Use gloves and ventilation. The other end gets the threaded clean-out with an O-ring, so you can arm it and change batteries.
 3. Glue the piezo flat to the **inside** of the cemented end cap. Mount the magnet against the inside of the same cap, so the pull and the sound each cross only one wall. Put the steel plate on the float side, outside the cap.
 4. Measure the magnet's hold force through a scrap piece of the real cap. If the force drops too much, thin the cap from the outside with a flat recess.

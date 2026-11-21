@@ -42,7 +42,7 @@ LURE's number is an estimate, not a final cost.
 | Sleep, wake on clock alarm, tone detection (Arduino Nano, desk) | Works on the bench |
 | Piezo bias circuit, strong signal in contact with a speaker | Works on the bench |
 | Piezo in water and through the PVC end cap | Not tested yet |
-| APW 32 mm hold magnet on the battery pack | Not tested yet |
+| APW EML32mm-12 hold magnet on the 12 V pack (two 4 AA in series) | Not tested yet |
 | PVC housing at 40 ft | Not tested yet |
 | Idle current on a 3.3V Pro Mini | Not tested yet |
 | Boat-side transducer (the lab already has one), range and tone coding | Not tested yet |
