@@ -22,7 +22,7 @@ Design and prototype a low-cost, timed release that brings acoustic receivers up
    - a. Burn wire (nichrome around a nylon line): original plan. PAUSED, because we could not get it to work consistently in water.
    - b. Hold magnet: CURRENT PLAN (decided Nov 1). It holds with no power and lets go when it is powered.
 4. Acoustic release: you choose the day, but it must listen constantly, so it needs a battery, and commercial ones are expensive to buy. UPDATE Nov 8: we are now building our own low-cost version, using a piezo disc as the listener (see PIEZO TONE TRIGGER below).
-5. Housing for the electronics (added Nov 8). It has to sit at about 40 ft (about 17 psi of water pressure) for 4 to 6 months, stay sealed, and let the magnet and the piezo work through its wall. DECISION (Nov 8): for now we plan on PVC pipe. Not final until it passes the dry run and the through-the-wall tests.
+5. Housing for the electronics (added Nov 8). It has to sit at about 40 ft (about 17 psi of water pressure) for 4 to 6 months, stay sealed, and let the piezo hear through its wall. The hold magnet is mounted outside the housing, with its two wires going in through one drilled hole sealed with epoxy. DECISION (Nov 8): for now we plan on PVC pipe. Not final until it passes the dry run, the piezo through-the-wall test and the wire hole leak test.
    - a. Nalgene bottle: RULED OUT. Some of the team found articles saying these can start to crush around 40 ft. It is not made for outside pressure, and the lid threads and gasket are the likely leak point. (Add the article links here.)
    - b. Pelican-style case: RULED OUT. These are rated IP67, which is 1 meter for 30 minutes (Pelican 1150 spec). Months at 40 ft is far outside that. A big flat lid also carries a lot of total force (rough estimate: about 1,000 lb on a 9 by 7 inch lid at 17 psi). They also have a pressure equalizing valve, which is the wrong feature for a unit that has to stay sealed.
    - c. PVC pipe (Schedule 40) with one cemented cap and one O-ring end: CURRENT PLAN (for now).
@@ -31,7 +31,7 @@ Design and prototype a low-cost, timed release that brings acoustic receivers up
      - The weak spot is the end seals, not the wall. The open-source Cave Pearl Project used 2 inch Schedule 40 PVC with screw caps for underwater Arduino loggers running about a year.
      - Avoid expanding gripper (test) plugs. A ScubaBoard thread reports they popped out at 10 to 15 psi and can leak through the center bolt. Use a threaded clean-out or flange with an O-ring, and glue the other end permanently.
      - Scuba forum anecdotes (not tested by us): a capped 3 inch Schedule 40 pipe reportedly did not implode at 484 ft, and 2 inch pipe sealed with ABS cement was used at 90 to 130 ft for about a year. One poster warns that plastics are temperature sensitive and cold-water failures can be sudden.
-     - Concerns for our design: the magnet's pull has to cross the end cap (thicker than a bottle wall, and holding force drops fast with distance), and the piezo signal has to cross it too. Thin the cap from the outside with a flat recess if needed.
+     - Concerns for our design: the piezo signal has to cross the end cap. The magnet is outside the housing now, so its pull does not cross the wall, but its wires need a drilled hole through the cap, sealed with epoxy. That hole is the new leak risk.
      - Size: the APW 32 mm magnet, Pro Mini, DS3231 and 4 AA holder probably need 3 inch pipe or larger. Check the fit with the real parts.
    - d. OtterBox-style dry box: BACKUP OPTION if PVC does not work out.
      - Ratings are deeper than Pelican: the 3250 series is IP68, immersed up to 90 feet for 30 minutes, and older series are listed to 100 feet.
@@ -43,11 +43,11 @@ Design and prototype a low-cost, timed release that brings acoustic receivers up
    - For any housing:
      - Do a dry run before the electronics go in: sink the sealed empty housing at 40 ft with paper towels inside for at least a week, then check for water and for any wall deformation. Ideally also test cold.
      - A sealed housing full of air floats. Anchor it firmly to the cinder blocks (not zip ties) and check that the anchor still holds.
-     - Measure magnet hold force and piezo signal through the actual wall or cap thickness.
+     - Measure the piezo signal through the actual wall or cap thickness, and leak test a drilled, epoxied wire hole on a scrap cap.
 
 ## CHOSEN DESIGN (updated Nov 1: hold magnet replaces burn wire)
 Battery, DS3231 real-time clock, Arduino, logic-level MOSFET, and a hold magnet that keeps the float latched with no power until the tone arrives after the wake date.
-1. Arm with a push button (reed switch and magnet in the sealed version) and set the alarm date.
+1. Program over USB (set the wake time there), unplug USB, then arm by flipping the battery on/off switch to on. The switch sits in the +12 V line after the fuse.
 2. Sleep for months while the clock keeps time. The magnet needs no power while it holds, so the battery only runs the clock.
 3. On the set date the clock wakes the board, which listens for the coded tone from the boat. When it hears the tone, the MOSFET powers the hold magnet, which lets go of the float.
 4. The float rises and takes the haul rope to the surface. The board stays awake and keeps listening, so a later tone fires the magnet again as a retry (decided Nov 12 and Nov 19). It does not go back to sleep.
@@ -59,15 +59,15 @@ Nov 8 add-on: a piezo tone listener can also trigger the MOSFET. See the next se
 
 ## PVC HOUSING PLAN (for now, decided Nov 8)
 - Start with 3 inch Schedule 40 PVC, a cemented cap on one end, and a threaded clean-out with an O-ring (not a gripper plug) on the other. Fall back to 4 inch if the parts do not fit. 2 inch is probably too small for the two 4 AA holders and the 32 mm magnet.
-- Where things go: the magnet and piezo sit against the inside of the cemented end cap, so the signal and the pull only cross one wall. The electronics and batteries sit behind them, and the O-ring end opens for arming and battery changes.
+- Where things go: the piezo sits against the inside of the cemented end cap, so the signal only crosses one wall. The hold magnet is mounted on the outside of that cap and holds a thick plain-steel washer tied to the float. Its two wires go through one drilled hole in the cap, sealed with epoxy. The electronics and batteries sit behind the piezo, and the O-ring end opens for arming and battery changes.
 - Steps before we trust it:
   1. Fit check with the real parts (APW 32 mm, Pro Mini or Nano, DS3231, and two 4 AA holders, since the magnet is 12 V).
-  2. Measure magnet hold force through a scrap of the real cap, dry. Thin the cap with a flat recess from the outside if the force drops too much.
+  2. Wire hole leak test: drill the wire hole in a scrap cap, run two magnet wires through, seal with epoxy, and hold it underwater (or at pressure) for a week or more. Check for any water inside.
   3. Piezo test: glue the disc flat to the inside of a scrap cap and repeat the tub test. Compare to the bare disc.
   4. Dry run: sealed empty pipe with paper towels, 40 ft, at least a week. Check for water and deformation.
   5. Buoyancy and tie-down: weigh the lift of the sealed pipe, and plan a rope or strap to the cinder blocks.
   6. Cold test if possible, since forum posts warn that plastics can fail suddenly in cold water.
-- If the pipe fails the dry run or kills the magnet or piezo signal, switch to the OtterBox-style box and repeat the same tests.
+- If the pipe fails the dry run or leaks at the wire hole or kills the piezo signal, switch to the OtterBox-style box and repeat the same tests.
 
 ## PIEZO TONE TRIGGER (CURRENT PLAN, decided Nov 8)
 Idea: a piezo disc listens for one coded tone. When it hears the tone, the board fires the same MOSFET output that drives the release. This is the low-cost version of how commercial acoustic releases work.
@@ -98,7 +98,7 @@ Results so far (Nov 5):
 Design notes and constraints:
 - Piezo discs work best in the audio range, about 1 to 10 kHz, and usually have a resonance peak around 3 to 5 kHz. We plan to sweep the tone and pick the strongest frequency. Above 4 kHz the ADC sampling must be sped up (prescaler 64, about 16 kHz sampling).
 - Sound from a speaker in the air mostly bounces off the water surface. The boat side plays the tone through an underwater transducer. The scientists already have one, so we do not need to buy a speaker. We still need to check what frequencies it can play and at what range.
-- The disc should be glued flat to the inside of the housing wall (the flat end cap of the PVC pipe, not the curved side) so the wall carries the vibration, which also means no wires through the wall. Expect some signal loss through the wall (a guess of 10 to 20 dB, not measured). Test the bare disc in water and the disc mounted inside a scrap PVC cap.
+- The disc should be glued flat to the inside of the housing wall (the flat end cap of the PVC pipe, not the curved side) so the wall carries the vibration, which also means the piezo needs no wires through the wall (only the magnet wires go through, in their one epoxied hole). Expect some signal loss through the wall (a guess of 10 to 20 dB, not measured). Test the bare disc in water and the disc mounted inside a scrap PVC cap.
 - If the signal is too weak, add a small op-amp stage (about 10 to 20x gain) between the piezo and A0.
 - We would avoid the 69 kHz band used by fish tags. At 1 to 4 kHz this is not an issue.
 - The 100k bias divider draws about 25 uA all the time. In the sealed build, power it from a spare pin and turn it on only while listening.
@@ -175,7 +175,7 @@ We first planned a Nalgene bottle (magnet and electronics inside, no holes throu
 - Kitchen scale or luggage scale to measure holding force
 - Rope storage tests: PVC tube or plastic tub, mesh or cloth bag, about 50 to 100 ft of 4 mm braided Dyneema or polyester line, 2 mm cord for the float tether
 - Piezo tone trigger: 35 mm piezo disc (a pack of 10), two 100k resistors, one 0.1 uF (104) ceramic capacitor (the Elegoo kit has them), a plastic tub or bucket, a zip bag for a phone speaker, and a scrap PVC end cap with epoxy for the inside-mount test. Optional: a low-power op-amp for gain.
-- PVC housing: a few feet of 3 inch Schedule 40 pipe, two 3 inch caps (one to cement on, one scrap for the through-the-wall tests), a threaded clean-out adapter with plug and O-ring for the opening end, PVC primer and cement, rope and a weight for the 40 ft dry run, paper towels. Try a 4 inch piece too if the 3 inch is tight.
+- PVC housing: a few feet of 3 inch Schedule 40 pipe, two 3 inch caps (one to cement on, one scrap for the piezo and wire hole tests), a threaded clean-out adapter with plug and O-ring for the opening end, PVC primer and cement, rope and a weight for the 40 ft dry run, paper towels. Try a 4 inch piece too if the 3 inch is tight.
 - Later: 3.3V Pro Mini and FTDI adapter, lithium AA cells, epoxy for wire feedthroughs.
 - Parts for the paused burn wire approach (keep for later): nichrome 60 wire 30 AWG, nylon fishing line 10 to 20 lb test, ceramic tile or metal tray.
 
@@ -192,11 +192,11 @@ The float does not lift the cinder block anchor. It only marks the spot and carr
 - Voltage: ANSWERED (Nov 19). The magnet is the APW EML32mm-12: 12 V DC, 1.2 A, 10 ohm, 14.4 W, duty listed as "Intermittent", about 40 lb holding, 32 mm by 29 mm, 26 AWG leads 200 mm long. The team wired two 4 AA packs in series (about 12 V) and that works. APW describes its permanent electromagnets as holding with no power and "neutralized" when powered. The listing does not give coil polarity, a pulse length or a temperature rating, so test both polarities and the shortest pulse that lets go. The magnet grips again as soon as power stops, so the pulse has to last until the float has pulled clear (the sketch uses 3 s).
 - Release power: how much current and how long does the magnet need to let go? The listing says 1.2 A at 12 V. APW's page says these suit holding most of the time and releasing infrequently for very short periods, so keep the pulse short and spaced (the sketch waits 5 s after each firing). Check the coil temperature after a few pulses. Measure it, and test the shortest pulse that works. It should be a short pulse, so battery life should be fine, but we need to confirm the battery can supply that current after months in cold water (cold lowers battery output).
 - Holding force: it must hold against the float's pull for months. A rough planning number is a float of 1 to 2 L, which pulls up about 2 to 4 lb (estimate, to be confirmed). The 32 mm is listed at about 40 lb, roughly 10 times that, but rated force drops a lot with any gap, so measure it with a real gap.
-- Holding force through the housing wall: the magnet sits inside, so its pull has to cross the PVC end cap. A thick cap could cut the force a lot. Measure it through the actual cap, and thin the cap with an outside recess if needed.
+- Wire hole seal: the magnet is outside, so its two wires pass through a drilled hole in the cap, sealed with epoxy. This is the main leak risk. Leak test it on a scrap cap and include it in the dry run.
 - Fail-stuck behavior: because it only releases when powered, a dead battery or failed board means the float never releases. The scientist's drag line grapple is still the fallback. We should also decide how to check that the battery and board are healthy before deploying (for example a test pulse on land).
-- Fouling: silt, rust and mussel growth between the magnet and its steel plate will weaken the hold or could keep it from letting go. Needs a test.
+- Fouling: silt, rust and mussel growth between the magnet and its steel washer will weaken the hold or could keep it from letting go. Needs a test.
 - Waterproofing: magnet, coil and wiring need to be sealed and still release in cold water.
-- Release reliability after a long hold: check that the magnet and plate do not stick together after weeks or months, even when powered.
+- Release reliability after a long hold: check that the magnet and washer do not stick together after weeks or months, even when powered.
 - The burn wire stays on the shelf, not scrapped. We can revisit it if we find out why the results were inconsistent.
 
 ## HAUL ROPE SPEC (starting point, planning estimates; check the real rated strength on the product listing)
@@ -224,7 +224,7 @@ Notes:
 
 ## TESTS FOR THE ENGINEERING NOTEBOOK
 - Magnet hold force: measure how much pull the magnet holds, dry and in cold water, with a clean gap and with a gap of silt, sand or rust.
-- Magnet hold force through the housing: repeat through a piece of the real PVC end cap to see how much force is lost.
+- Wire hole leak test: drilled and epoxied hole on a scrap cap, held underwater for a week or more, then checked for water inside.
 - Magnet release: confirm it lets go on command in cold water, with fouled surfaces, and with the float pulling on it. Measure the release current and how long the pulse needs to be.
 - Battery check: confirm the batteries can supply the release pulse after sitting in the cold, and estimate sleep-mode battery life for 4 to 6 months.
 - Long hold test: leave a magnet latched with a weight in a bucket of cold water for weeks and check that it still holds and still releases.
@@ -263,7 +263,7 @@ Adults handle all powered tests. Strong magnets can pinch fingers badly and can 
 - Nov 8: piezo tone trigger is now the plan. Added the build log of what we tried and why.
 - Nov 8: APW 32 mm hold magnet ordered. Waiting on delivery.
 - Nov 19: confirmed the magnet is 12 V (EML32mm-12, 1.2 A). Power is two 4 AA packs in series. Redrew the electronics wiring as one diagram (the old one had the battery unconnected). Decided it listens until the pack dies and keeps listening after firing.
-- Nov 8: Nalgene bottle ruled out for the housing (crush risk at 40 ft) and Pelican-style cases ruled out (1 meter rating). For now we plan on PVC pipe. OtterBox-style box is the backup. Not final until the dry run and through-the-wall tests pass.
+- Nov 8: Nalgene bottle ruled out for the housing (crush risk at 40 ft) and Pelican-style cases ruled out (1 meter rating). For now we plan on PVC pipe. OtterBox-style box is the backup. Not final until the dry run and piezo and wire hole tests pass.
 - Next: order the PVC parts and run the fit check; when the APW 32 mm arrives, measure its release current, coil polarity, shortest working pulse and holding force, including through a scrap PVC cap (it is rated 12 V); order desk-test parts (including a pack of piezo discs); run the piezo tub and housing tests and the resonance sweep; run the 40 ft dry run; check the 3000 Hz tone on the bench and decide whether to duty-cycle the listening; decide how the boat sends the tone; build a first canister and run the tangle test; and ask the scientist the questions above.
 
 ## REFERENCES

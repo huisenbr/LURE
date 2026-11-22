@@ -8,7 +8,7 @@ This guide walks through building one, testing it on a bench, and getting it rea
 
 ## How it works
 
-1. You set a wake date and power the unit on. This is "arming."
+1. You set the wake date in the sketch and program it over USB, unplug USB, then flip the battery switch on. This is "arming."
 2. Everything sleeps. A DS3231 clock keeps time and the Arduino draws almost nothing.
 3. On the wake date the clock wakes the Arduino.
 4. The Arduino listens through a piezo disc for a 1000 Hz tone (the tone is adjustable). It only counts the tone if it is loud enough and pure enough, 8 windows in a row (about 0.2 seconds).
@@ -40,13 +40,14 @@ Search terms only, prices not checked. Buy a spare of the small parts.
 | DS3231 real-time clock module | Use the coin cell type its listing recommends. |
 | IRLZ44N logic-level MOSFET | Not an IRF520 module. |
 | APW EML32mm-12 hold magnet (electro-permanent) | Holds with no power, lets go when powered. 12 V, 1.2 A, 10 ohm, about 40 lb holding. Duty is "Intermittent". Coil polarity and pulse length are not listed, so test them. |
-| Steel plate for the magnet to grab | Ours is 1 mm 304 stainless sheet for bucket tests. Match the plate to the magnet's listing. |
+| Thick steel washer for the magnet to grab | Plain steel, not stainless (stainless is barely magnetic). Thicker is better. Ties to the float. |
 | Flyback diode (1N4007 or similar) | Goes across the magnet. |
 | 35 mm piezo disc | A pack of 10 is cheap. |
 | Resistors: two 100k, one 220 ohm, one 10k | |
 | 0.1 uF (104) ceramic capacitor | |
 | Two 4 AA battery holders + lithium AA cells | Wired in series for about 12 V (the magnet is 12 V). Lithium holds up better in cold water than alkaline. |
 | 3 to 5 A fuse and holder | In line with the battery. |
+| Battery on/off switch | Rated for at least 2 A at 12 V. Goes in the +12 V line after the fuse. Flipping it on is how you arm the unit. |
 | 3 inch Schedule 40 PVC pipe, one cap to cement on, one scrap cap for tests | See the housing step. |
 | Threaded clean-out adapter with plug and O-ring | The opening end. Do not use an expanding gripper plug. |
 | PVC primer and cement | |
@@ -108,7 +109,8 @@ At the top of `Main.ino` is a block between `===== EDIT THESE =====` markers:
 
 | Setting | Default | What it does |
 |---|---|---|
-| `SLEEP_SEC` | 30 | Seconds to sleep before listening. Use 30 for bench tests. For deployment see Step 6. |
+| `WAKE_YEAR`, `WAKE_MONTH`, `WAKE_DAY`, `WAKE_HOUR`, `WAKE_MINUTE` | 0, 3, 15, 8, 0 | The wake date. `WAKE_YEAR` 0 means bench mode. See Step 6 (Arm it). |
+| `SLEEP_SEC` | 30 | Bench mode only: seconds to sleep from power-up before listening. |
 | `TARGET_HZ` | 1000 | The tone to listen for. |
 | `MIN_RMS` | 3.0 | Ignores near-silence. Raising it makes the unit less sensitive. |
 | `MIN_RATIO` | 0.5 | How pure the tone must be (0 to 1). Raise to 0.6 or 0.7 if noise triggers it. |
@@ -127,11 +129,11 @@ Two things about the current sketch to know:
 
 Do these in order. Keep the magnet's wires disconnected for the first two tests, and use an LED with a resistor in place of the magnet if you want to see the output.
 
-1. **Sleep and wake.** Set `SLEEP_SEC` to 30, upload, and watch the Serial Monitor. It should print "Sleeping...", wait 30 seconds, then print "Awake." and "Listening for tone."
+1. **Sleep and wake.** Set `WAKE_YEAR` to 0 and `SLEEP_SEC` to 30, upload, and watch the Serial Monitor. It should print "Sleeping...", wait 30 seconds, then print "Awake." and "Listening for tone."
 2. **Quiet room.** While listening, the monitor prints `rms` and `ratio` each window. In a quiet room, rms should be about 0.5 and ratio low.
 3. **Tone test.** Press the piezo flat against a phone speaker playing a 1000 Hz tone. rms and ratio should jump. After 8 good windows in a row you should see "TONE DETECTED" and the output go high for 3 seconds. A bare disc held across a table will barely pick anything up. That is normal.
 4. **False trigger test.** Clap, talk, tap the table, play 600 Hz and 1500 Hz tones. It must never print "TONE DETECTED."
-5. **Magnet test.** Connect the magnet and plate with the fuse in line. Use a multimeter to read the current when it releases. Measure the real holding force with a scale and note the gap you used. Test the shortest `ON_MS` that reliably lets go.
+5. **Magnet test.** Connect the magnet, with a washer on it and the fuse in line. Use a multimeter to read the current when it releases. Measure the real holding force with a scale and note the gap you used. Test the shortest `ON_MS` that reliably lets go.
 6. **Cold and long hold test (recommended).** Leave the magnet latched with a weight in a bucket of cold water for weeks and check it still holds and still releases.
 
 ## Step 5: Tune the tone for the piezo
@@ -146,14 +148,18 @@ Above 4 kHz the sketch's 8 kHz sampling is too slow. You would need to speed up 
 
 ## Step 6: Arm it
 
-The sketch starts its timer when it powers up: it sleeps for `SLEEP_SEC` seconds from boot. So arming is:
+USB is for programming. The battery is for running. Arming means flipping the battery switch on.
 
-1. Decide how many days until the wake date. Compute `SLEEP_SEC = days x 86,400`. Example: 120 days = 10,368,000. Use a number with `UL` after it if the compiler complains, like `10368000UL`.
-2. Edit `SLEEP_SEC`, upload, and watch the Serial Monitor to confirm the "Wakes:" date is the one you meant.
-3. Power the unit from the battery pack (not USB), and check you still see "Sleeping..." on a last USB look if you can.
+1. Edit the wake date in the sketch: `WAKE_YEAR`, `WAKE_MONTH`, `WAKE_DAY`, `WAKE_HOUR`, `WAKE_MINUTE`.
+2. Upload over USB. The upload sets the DS3231 to the upload time automatically (using the compile time, so your computer's clock needs to be right). Watch the Serial Monitor and confirm "Now:" and "Wake date:" are what you meant.
+3. Unplug USB. Make sure the battery switch is off, connect the battery pack, then flip the switch **on**. That is arming.
 4. Seal it up (Step 7).
 
-If you reset the board, the clock starts over from that moment. Re-arm any time the unit is reset or the batteries are changed. The DS3231's own coin cell keeps the time if the main battery drops out, but the countdown in the sketch restarts at boot. A wake date that survives resets is **TBD**.
+When the switch goes on, the unit just checks the date. If it is before the wake date it sleeps (in chunks of up to 7 days, waking briefly to recheck). If the wake date has passed, it skips sleeping and listens right away. Power cycles and battery swaps do not restart anything, because the DS3231 keeps the date on its own coin cell. Only a new upload resets the clock. If the clock loses power, the Serial Monitor prints a warning and you should re-upload.
+
+For bench tests, set `WAKE_YEAR` to 0. The unit then sleeps `SLEEP_SEC` seconds from power-up.
+
+**UNTESTED.** The wake date logic is new and has not been compiled or run on hardware yet.
 
 Plan for idle current under about 100 microamps average, or the batteries will not last months. The Pro Mini's power LED and onboard regulator use more than the sleeping chip does, and the DS3231 module has its own LED. Remove the LEDs and measure the sleep current with a multimeter in series with the battery. **UNTESTED, measure before trusting it.**
 
@@ -161,10 +167,10 @@ Plan for idle current under about 100 microamps average, or the batteries will n
 
 This is the plan and it is **not trusted until the dry run passes.** Full details are in the design doc under PVC HOUSING PLAN.
 
-1. Use 3 inch Schedule 40 PVC (4 inch if the parts do not fit). Check the fit with the real parts first: magnet, Pro Mini, DS3231, two 4 AA holders.
+1. Use 3 inch Schedule 40 PVC (4 inch if the parts do not fit). Check the fit with the real parts first: Pro Mini, DS3231, two 4 AA holders.
 2. Cement a cap on one end with primer and cement. Use gloves and ventilation. The other end gets the threaded clean-out with an O-ring, so you can arm it and change batteries.
-3. Glue the piezo flat to the **inside** of the cemented end cap. Mount the magnet against the inside of the same cap, so the pull and the sound each cross only one wall. Put the steel plate on the float side, outside the cap.
-4. Measure the magnet's hold force through a scrap piece of the real cap. If the force drops too much, thin the cap from the outside with a flat recess.
+3. Glue the piezo flat to the **inside** of the cemented end cap. Mount the hold magnet on the **outside** of the same cap, with a thick steel washer on the float side holding to it. Drill one small hole in the cap for the two magnet wires, run them through, and seal the hole with epoxy.
+4. Leak test the wire hole on a scrap cap first (drill, epoxy, hold underwater for a week or more). Keep the washer and magnet faces clean and flat so they grip.
 5. Repeat the piezo test with the disc glued inside the scrap cap, and compare it to the bare disc.
 6. **Dry run:** seal the empty housing with paper towels inside and sink it at 40 ft for at least a week, on a rope. Check for water and for any wall deformation. Keep people clear when you raise and open it. Ideally also test cold.
 7. A sealed housing full of air floats. Tie it to the anchor with a rope or strap, not zip ties.
@@ -197,7 +203,7 @@ If the pipe fails the dry run or kills the magnet or piezo signal, the backup is
 | Signal too weak through the wall or in water | Glue the disc flat against the cap, find the resonance peak, and if still weak add a small op-amp stage (about 10 to 20x gain) between the piezo and A0. |
 | Random "TONE DETECTED" | Raise `MIN_RATIO` to 0.6 or 0.7 or `MIN_RMS`. Re-run the false trigger test. |
 | Output fires but the magnet does not let go | Check the magnet's rated voltage against the battery. Check battery sag under load, and cold. Check the flyback diode direction. |
-| Magnet will not hold the float | Check the gap between plate and magnet and the thickness of the cap. Hold force drops fast with distance. |
+| Magnet will not hold the float | Check the gap between washer and magnet. Silt, rust or a bent washer weakens the hold fast. Use a thicker, flat washer. |
 | Batteries die early | Measure sleep current. Remove LEDs. Remember it stays awake and listening after the wake date, so it only sleeps cheaply before then. |
 
 ## Safety

@@ -1,6 +1,7 @@
 #include <Wire.h>
 #include <RTClib.h>
 #include <avr/sleep.h>
+#include <EEPROM.h>
 
 RTC_DS3231 rtc;
 
@@ -9,7 +10,15 @@ const int MIC_PIN = A0;
 const int FIRE_PIN = 9;       // MOSFET gate, same as before
 
 // ===== EDIT THESE =====
-const unsigned long SLEEP_SEC = 30;       // seconds asleep once at power-up, then it stays awake
+// Wake date: the unit sleeps until this date and time, then listens non-stop.
+// Set it, then upload over USB. The clock is set to the upload time automatically.
+// Set WAKE_YEAR to 0 for bench mode: sleep SLEEP_SEC seconds from power-up instead.
+const int WAKE_YEAR = 0;
+const int WAKE_MONTH = 3;
+const int WAKE_DAY = 15;
+const int WAKE_HOUR = 8;
+const int WAKE_MINUTE = 0;
+const unsigned long SLEEP_SEC = 30;       // bench mode only (WAKE_YEAR = 0)
 const float TARGET_HZ = 1000.0;           // tone to listen for
 const float MIN_RMS = 3.0;                // ignores near-silence
 const float MIN_RATIO = 0.5;              // 0 to 1, how pure the tone must be
@@ -24,6 +33,8 @@ const unsigned long SAMPLE_US = 125;
 
 int samples[N];
 float coeff;
+
+const unsigned long MAX_CHUNK_SEC = 7UL * 86400UL;   // longest single sleep, keeps the alarm unambiguous
 
 void wakeISR() {}             // does nothing, just wakes the chip
 
@@ -97,15 +108,36 @@ void setup() {
     Serial.println("RTC not found. Check SDA/SCL wiring.");
     while (true) {}
   }
-  if (rtc.lostPower()) {
-    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));   // set to compile time
+  // Set the clock once per upload (not on every power-up), so it keeps the real date.
+  DateTime built(F(__DATE__), F(__TIME__));
+  uint32_t stamp = 0;
+  EEPROM.get(0, stamp);
+  if (stamp != built.unixtime()) {
+    rtc.adjust(built);                    // new upload: clock = compile time
+    EEPROM.put(0, built.unixtime());
+    Serial.println("Clock set from upload time.");
+  } else if (rtc.lostPower()) {
+    rtc.adjust(built);                    // clock battery died: best guess is upload time
+    Serial.println("WARNING: clock lost power. Date may be wrong. Re-upload.");
   }
 
   rtc.disableAlarm(2);
   rtc.clearAlarm(1);
   rtc.writeSqwPinMode(DS3231_OFF);        // makes the pin an alarm output
 
-  sleepFor(SLEEP_SEC);                    // sleep once, until the wake time
+  if (WAKE_YEAR == 0) {
+    sleepFor(SLEEP_SEC);                  // bench mode
+  } else {
+    DateTime wakeDate(WAKE_YEAR, WAKE_MONTH, WAKE_DAY, WAKE_HOUR, WAKE_MINUTE, 0);
+    Serial.print("Wake date: ");
+    Serial.println(wakeDate.timestamp());
+    // Just checks the date. If it is already past, skips sleeping and listens.
+    while (rtc.now().unixtime() < wakeDate.unixtime()) {
+      unsigned long left = wakeDate.unixtime() - rtc.now().unixtime();
+      unsigned long chunk = (left < MAX_CHUNK_SEC) ? left : MAX_CHUNK_SEC;
+      sleepFor(chunk < 2 ? 2 : chunk);      // at least 2 s so the alarm is not already past
+    }
+  }
   Serial.println("Listening for tone. Staying awake from here on.");
 }
 
